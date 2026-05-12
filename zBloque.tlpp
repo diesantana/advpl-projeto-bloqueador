@@ -1,6 +1,6 @@
 #include "totvs.ch"
 
-/*/{Protheus.doc} nomeFunction
+/*/{Protheus.doc} zBloque
 Bloqueia o cadastro de um cliente.
 @type function
 @author Diego Santana
@@ -10,32 +10,64 @@ User Function zBloque()
 	Local oDialog
 	Local oLabelCl // Label Cliente
 	Local oLabelLj // Label Loja
-    Local oButton // Botão para bloquear cliente
+	Local oButton // Botão para bloquear cliente
 
-    // TGET Cliente
-    Local oInputCl // Tget Cliente (INPUT)
-    Local cClient := Space(8) // Armazena o valor do TGet Cliente
+	// TGET Cliente
+	Local oInputCl // Tget Cliente (INPUT)
+	Local cClient := Space(6) // Armazena o valor do TGet Cliente
 
-    // TGET Loja
-    Local oInputLj // Tget Loja (INPUT)
-    Local cLoja := Space(3)  // Armazena o valor do TGet Loja
+	// TGET Loja
+	Local oInputLj // Tget Loja (INPUT)
+	Local cLoja := Space(2)  // Armazena o valor do TGet Loja
 
 	// Cria TDialog
 	oDialog := TDialog():New(0,0,300,500,'Bloquear Clientes',,,,,CLR_BLACK,CLR_WHITE,,,.T.)
 
 	// Campo Cliente + label
 	oLabelCl:= TSay():New(10,10,{||'Cliente'},oDialog,,,,,,.T.,CLR_RED,CLR_WHITE,300,20)
-    oInputCl := TGet():New( 20,10,{|u| if( Pcount( )>0,cClient:= u, cClient) },oDialog,40,10,"@!",,0,,,.F.,,.T.,,.F.,,.F.,.F.,,.F.,.F.,,cClient,,,, )
-    oInputCl:cF3 := "SA1" // Consulta padrão SA1 Clientes
+	oInputCl := TGet():New( 20,10,{|u| if( Pcount( )>0,cClient:= u, cClient) },oDialog,40,10,"@!",,0,,,.F.,,.T.,,.F.,,.F.,.F.,,.F.,.F.,,cClient,,,, )
+	oInputCl:cF3 := "SA1" // Consulta padrão SA1 Clientes
 
 	// Campo Loja + label
 	oLabelLj:= TSay():New(10,60,{||'Loja'},oDialog,,,,,,.T.,CLR_RED,CLR_WHITE,300,20)
-    oInputLj := TGet():New( 20,60,{|u| if( Pcount( )>0,cLoja:= u, cLoja) },oDialog,30,10,"@!",,0,,,.F.,,.T.,,.F.,,.F.,.F.,,.F.,.F.,,cLoja,,,, )
+	oInputLj := TGet():New( 20,60,{|u| if( Pcount( )>0,cLoja:= u, cLoja) },oDialog,30,10,"@!",,0,,,.F.,,.T.,,.F.,,.F.,.F.,,.F.,.F.,,cLoja,,,, )
 
-    // Cria o botão "Bloquar cliente"
-    oButton := TButton():New( 60, 10, "Bloquear Cliente",oDialog,{||alert("CLIENTE BLOQUEADO")}, 60,15,,,.F.,.T.,.F.,,.F.,,,.F. )
+	// Cria o botão "Bloquar cliente"
+	oButton := TButton():New( 60, 10, "Bloquear Cliente",oDialog,{|| fBloquear(cClient, cLoja)}, 60,15,,,.F.,.T.,.F.,,.F.,,,.F. )
 
 
 	oDialog:Activate(,,,.T.) // Ativa a tela
 
+Return
+
+/*/{Protheus.doc} fBloquear
+    Bloqueia o cliente através do campo A1_MSBLQL. 
+    @type Function
+    @param cCode, Character, Código do cliente a ser bloqueado
+    @param cLoja, Character, Código da Loja
+    @author Diego Santana
+    @since 12/05/2026
+/*/
+Static Function fBloquear(cCode, cLoja)
+
+	// Boa prática, salva o contexto da área de trabalho atual
+	Local cArea := GetArea()
+
+	// Abre a tabela SA1 em uma area de trabalho
+	DbSelectArea("SA1")
+	// Define o INDICE padrão para buscas
+	SA1->(DbSetOrder(1)) // Filial + Código
+
+	//Busca o cliente usando o índice 1 (FILIAL+CÓD+LOJA)
+	SA1->(DbSeek(xFilial("SA1")+cCode+cLoja))
+
+	RecLock("SA1", .F.) // .F. = edição
+	SA1->A1_MSBLQL := '1' 
+	MsUnlock()
+
+	// Informa ao usuário que o registro foi atualizado
+	MsgInfo("O cliente <strong>"+  AllTrim(SA1->A1_NOME) +"</strong> foi bloqueado com sucesso.", "Cliente Bloquado") 
+
+	// Boa prática, restaura o contexto da área de trabalho anterior
+	RestArea(cArea)
 Return
