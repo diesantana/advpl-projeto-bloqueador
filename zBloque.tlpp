@@ -1,0 +1,41 @@
+#include "totvs.ch"
+
+/*/{Protheus.doc} nomeFunction
+Bloqueia o cadastro de um cliente.
+@type function
+@author Diego Santana
+@since 12/05/2026
+/*/
+User Function zBloque()
+	Local oDialog
+	Local oLabelCl // Label Cliente
+	Local oLabelLj // Label Loja
+    Local oButton // Botão para bloquear cliente
+
+    // TGET Cliente
+    Local oInputCl // Tget Cliente (INPUT)
+    Local cClient := Space(8) // Armazena o valor do TGet Cliente
+
+    // TGET Loja
+    Local oInputLj // Tget Loja (INPUT)
+    Local cLoja := Space(3)  // Armazena o valor do TGet Loja
+
+	// Cria TDialog
+	oDialog := TDialog():New(0,0,300,500,'Bloquear Clientes',,,,,CLR_BLACK,CLR_WHITE,,,.T.)
+
+	// Campo Cliente + label
+	oLabelCl:= TSay():New(10,10,{||'Cliente'},oDialog,,,,,,.T.,CLR_RED,CLR_WHITE,300,20)
+    oInputCl := TGet():New( 20,10,{|u| if( Pcount( )>0,cClient:= u, cClient) },oDialog,40,10,"@!",,0,,,.F.,,.T.,,.F.,,.F.,.F.,,.F.,.F.,,cClient,,,, )
+    oInputCl:cF3 := "SA1" // Consulta padrão SA1 Clientes
+
+	// Campo Loja + label
+	oLabelLj:= TSay():New(10,60,{||'Loja'},oDialog,,,,,,.T.,CLR_RED,CLR_WHITE,300,20)
+    oInputLj := TGet():New( 20,60,{|u| if( Pcount( )>0,cLoja:= u, cLoja) },oDialog,30,10,"@!",,0,,,.F.,,.T.,,.F.,,.F.,.F.,,.F.,.F.,,cLoja,,,, )
+
+    // Cria o botão "Bloquar cliente"
+    oButton := TButton():New( 60, 10, "Bloquear Cliente",oDialog,{||alert("CLIENTE BLOQUEADO")}, 60,15,,,.F.,.T.,.F.,,.F.,,,.F. )
+
+
+	oDialog:Activate(,,,.T.) // Ativa a tela
+
+Return
